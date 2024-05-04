@@ -140,6 +140,10 @@ class VGG(nn.Module):
         h = x.view(x.size(0), -1)
         x = self.classifier(h)
         return x, h
+        
+# Define the optimizer and scheduler
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 def create_vggcustommodel(numclasses, img_shape):
     #Each item in the list is either 'M', which denotes a max pooling layer, or an integer, which denotes a convolutional layer with that many filters.
