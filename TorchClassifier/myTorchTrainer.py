@@ -31,7 +31,7 @@ except:
     # !pip install -q torchinfo
     # from torchinfo import summary
 
-os.environ['TORCH_HOME'] = '/data/cmpe249-fa23/torchhome/' #setting the environment variable
+os.environ['TORCH_HOME'] = '/data/cmpe258-Spring2024/torchhome/' #setting the environment variable
 
 CHECKPOINT_PATH="./outputs"
 CHECKPOINT_file=os.path.join(CHECKPOINT_PATH, 'checkpoint.pth.tar')
@@ -71,7 +71,7 @@ parser.add_argument('--data_name', type=str, default='imagenet_blurred',
                     help='data name: imagenet_blurred, tiny-imagenet-200, hymenoptera_data, CIFAR10, MNIST, flower_photos')
 parser.add_argument('--data_type', default='trainonly', choices=['trainonly','trainvalfolder', 'traintestfolder', 'torchvisiondataset'],
                     help='the type of data') 
-parser.add_argument('--data_path', type=str, default="/data/cmpe249-fa23/ImageClassData",
+parser.add_argument('--data_path', type=str, default="/data/cmpe-258-Spring24/v2-plant-seedlings-dataset",
                     help='path to get data') #/Developer/MyRepo/ImageClassificationData; r"E:\Dataset\ImageNet\tiny-imagenet-200"
 parser.add_argument('--img_height', type=int, default=224,
                     help='resize to img height, 224')
