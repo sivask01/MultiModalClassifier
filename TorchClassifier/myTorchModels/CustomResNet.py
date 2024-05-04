@@ -172,43 +172,31 @@ class Bottleneck(nn.Module):
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def setupCustomResNet(numclasses, modelname):
+def setupCustomResNet(num_classes, model_name):
     ResNetConfig = namedtuple('ResNetConfig', ['block', 'n_blocks', 'channels'])
-    resnet18_config = ResNetConfig(block = BasicBlock,
-                                n_blocks = [2,2,2,2],
-                                channels = [64, 128, 256, 512])
+    resnet_configs = {
+        'resnet18': ResNetConfig(block=BasicBlock, n_blocks=[2, 2, 2, 2], channels=[64, 128, 256, 512]),
+        'resnet34': ResNetConfig(block=BasicBlock, n_blocks=[3, 4, 6, 3], channels=[64, 128, 256, 512]),
+        'resnet50': ResNetConfig(block=Bottleneck, n_blocks=[3, 4, 6, 3], channels=[64, 128, 256, 512]),
+        'resnet101': ResNetConfig(block=Bottleneck, n_blocks=[3, 4, 23, 3], channels=[64, 128, 256, 512]),
+        'resnet152': ResNetConfig(block=Bottleneck, n_blocks=[3, 8, 36, 3], channels=[64, 128, 256, 512])
+    }
 
-    resnet34_config = ResNetConfig(block = BasicBlock,
-                                n_blocks = [3,4,6,3],
-                                channels = [64, 128, 256, 512])
-    
-    resnet50_config = ResNetConfig(block = Bottleneck,
-                               n_blocks = [3, 4, 6, 3],
-                               channels = [64, 128, 256, 512])
+    if model_name not in resnet_configs:
+        raise ValueError("Invalid model name. Choose from 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'.")
 
-    resnet101_config = ResNetConfig(block = Bottleneck,
-                                    n_blocks = [3, 4, 23, 3],
-                                    channels = [64, 128, 256, 512])
+    # Load the pre-trained ResNet model
+    pretrained_model = models.__dict__[model_name](pretrained=True)
 
-    resnet152_config = ResNetConfig(block = Bottleneck,
-                                    n_blocks = [3, 8, 36, 3],
-                                    channels = [64, 128, 256, 512])
-    
-    if modelname == 'resnet50':
-        #load the pre-trained ResNet model.
-        pretrained_model = models.resnet50(pretrained = True)
-        print(pretrained_model)
+    # Create a new linear layer with the required dimensions
+    in_features = pretrained_model.fc.in_features
+    output_dim = num_classes
+    fc = nn.Linear(in_features, output_dim)
+    pretrained_model.fc = fc  # Replace the pre-trained model's linear layer with our own
 
-        #create a new linear layer with the required dimensions
-        IN_FEATURES = pretrained_model.fc.in_features 
-        OUTPUT_DIM = numclasses #len(test_data.classes)
+    # Initialize our ResNet model from the configuration
+    model = ResNet(resnet_configs[model_name], output_dim)
+    model.load_state_dict(pretrained_model.state_dict())
 
-        fc = nn.Linear(IN_FEATURES, OUTPUT_DIM)
-        pretrained_model.fc = fc #replace the pre-trained model's linear layer with our own, randomly initialized linear layer.
-        
-        #initialize our ResNet50 model from the configuration
-        model = ResNet(resnet50_config, OUTPUT_DIM)
-        model.load_state_dict(pretrained_model.state_dict())
-        print(f'The model has {count_parameters(model):,} trainable parameters')
-
-        return model
+    print(f'The model has {count_parameters(model):,} trainable parameters')
+    return model
